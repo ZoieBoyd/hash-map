@@ -1,4 +1,4 @@
-export class HashMap {
+export class HashSet {
    constructor() {
       this.loadFactor = 0.75;
       this.capacity = 16;
@@ -20,17 +20,14 @@ export class HashMap {
       return this.length() / this.capacity;
    }
 
-   set(key, value) {
+   set(key) {
       const index = this.#hash(key);
       if (!this.buckets[index]) {
          this.buckets[index] = new Array();
       }
 
-      const entry = this.buckets[index].find((element) => element[0] === key);
-      if (entry) {
-         entry[1] = value;
-      } else {
-         this.buckets[index].push([key, value]);
+      if (!this.buckets[index].includes(key)) {
+         this.buckets[index].push(key);
       }
 
       if (this.getLoadFactor() > this.loadFactor) {
@@ -43,28 +40,19 @@ export class HashMap {
       const entriesCopy = this.entries();
       this.clear();
       for (const entry of entriesCopy) {
-         this.set(entry[0], entry[1]);
+         this.set(entry);
       }
-   }
-
-   get(key) {
-      const bucket = this.buckets[this.#hash(key)];
-      if (!bucket) return null;
-      const entry = bucket.find((element) => element[0] === key);
-      return !entry ? null : entry[1];
    }
 
    has(key) {
       const bucket = this.buckets[this.#hash(key)];
-      return bucket ? bucket.some((entry) => entry[0] === key) : false;
+      return bucket ? bucket.includes(key) : false;
    }
 
    remove(key) {
+      if (!this.has(key)) return false;
       const bucket = this.buckets[this.#hash(key)];
-      if (!bucket) return false;
-      const index = bucket.findIndex((element) => element[0] === key);
-      if (index < 0) return false;
-      bucket.splice(index, 1);
+      bucket.splice(bucket.indexOf(key), 1);
       return true;
    }
 
@@ -74,14 +62,6 @@ export class HashMap {
 
    clear() {
       this.buckets = new Array(this.capacity);
-   }
-
-   keys() {
-      return this.entries().map((entry) => entry[0]);
-   }
-
-   values() {
-      return this.entries().map((entry) => entry[1]);
    }
 
    entries() {
